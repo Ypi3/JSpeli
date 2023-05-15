@@ -1,0 +1,28 @@
+#canvas {
+  background: rgb(223, 208, 208);
+  border: 5px solid black;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#canvas2 {
+  background: rgba(151, 93, 93, 0.329);
+  border: 5px solid black;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#playerImage {
+  display: none;
+}
+
+#playerImageRed {
+  position: relative;
+  left: 300px;
+  top: 100px;
+  transform: rotate(45deg);
+}
