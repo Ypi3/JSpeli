@@ -59,6 +59,13 @@ window.addEventListener('load', function(){ //jatketaan vasta, kun kaikki on lad
             this.ydir=1;
             this.rotate=0;
             this.image = document.getElementById('playerImage');
+            this.points = [];
+            this.centerpoint_x = 50;
+            this.centerpoint_y = 50;
+            this.reunapisteetOrig = [{x: -50, y: -50}, {x: 50, y: -50}, {x: -50, y: 50}, {x: 50, y: 50}];
+            this.reunapisteet = [{x: 0, y: 0}, {x: 0, y: 0}, {x: 0, y: 0}, {x: 0, y: 0}];
+            this.uusix = 10;
+            this.uusiy = 10;
             
         }
 
@@ -109,6 +116,40 @@ window.addEventListener('load', function(){ //jatketaan vasta, kun kaikki on lad
                 this.y = canvas.width - this.width +1;
             }   
 
+            this.centerpoint_x = this.x+this.width/2;
+            this.centerpoint_y = this.y+this.height/2;
+            var radians = (Math.PI / 180) * this.rotate;
+            var kulma1x=-50; //kulman etäisyys keskipisteestä
+            var kulma1y=-50;  //kulman etäisyys keskipisteestä
+            this.uusix = kulma1x*Math.cos(radians) - kulma1y*Math.sin(radians) + this.centerpoint_x;
+            this.uusiy = kulma1y*Math.cos(radians) + kulma1x*Math.sin(radians) + this.centerpoint_y; 
+
+            if (this.uusix<-1) {
+                this.x = this.centerpoint_x - this.uusix -49;
+            }
+            if (this.uusiy<-1) {
+                this.y = this.centerpoint_y - this.uusiy -49;
+            }
+ 
+            for (let i = 0; i < this.reunapisteet.length; i++) {
+                this.reunapisteet[i].x = this.reunapisteetOrig[i].x*Math.cos(radians) - this.reunapisteetOrig[i].y*Math.sin(radians) + this.centerpoint_x;
+                this.reunapisteet[i].y = this.reunapisteetOrig[i].y*Math.cos(radians) + this.reunapisteetOrig[i].x*Math.sin(radians) + this.centerpoint_y; 
+            }
+
+            for (let i = 0; i < this.reunapisteet.length; i++) {
+                if (this.reunapisteet[i].x <-1) {
+                    this.x = this.centerpoint_x - this.reunapisteet[i].x -49;
+                }
+                if (this.reunapisteet[i].y<-1) {
+                    this.y = this.centerpoint_y - this.reunapisteet[i].y -49;
+                }
+                if (this.reunapisteet[i].x > canvas.width +1) {
+                    this.x = canvas.width - (this.reunapisteet[i].x -this.centerpoint_x) -51;
+                }
+                if (this.reunapisteet[i].y > canvas.height +1) {
+                    this.y = canvas.height - (this.reunapisteet[i].y -this.centerpoint_y) -51;
+                }
+            }
         }
                 
         draw(){
@@ -149,10 +190,25 @@ window.addEventListener('load', function(){ //jatketaan vasta, kun kaikki on lad
             var transformedPoint = transformMatrix.transformPoint(point);
 
             // transformedPoint sisältää nyt pisteen sijainnin käännetyllä kuvalla
-            console.log(transformedPoint.x, transformedPoint.y);
+            //console.log(transformedPoint.x, transformedPoint.y);
+            this.points[0] = transformMatrix.transformPoint({x: 0, y: 0});
+            this.points[1] = transformMatrix.transformPoint({x: 0, y: this.height});
+            this.points[2] = transformMatrix.transformPoint({x: this.width, y: 0});
+            this.points[3] = transformMatrix.transformPoint({x: this.width, y: this.height});
+            console.log(this.points, this.rotate);
+
+            ctx.fillRect(this.points[0].x, this.points[0].y,4,4); // fill in the pixel at (10,10)
+            ctx.fillRect(this.points[1].x, this.points[1].y,4,4);
+            ctx.fillRect(this.points[2].x, this.points[2].y,4,4);
+            ctx.fillRect(this.points[3].x, this.points[3].y,4,4);
+            ctx.fillStyle = "red";
+            ctx.fillRect(this.centerpoint_x, this.centerpoint_y,4,4);
+            ctx.fillRect(this.uusix, this.uusiy,10,10);
 
 
-
+            for (let i = 0; i < this.reunapisteet.length; i++) {
+                ctx.fillRect(this.reunapisteet[i].x, this.reunapisteet[i].y,10,10); 
+            }
             //ja lopuksi palauttaa canvas
             //ctx.rotate(-Math.PI / 4);
             //ctx.translate(-this.x - this.width/2, -this.y);
@@ -211,13 +267,13 @@ window.addEventListener('load', function(){ //jatketaan vasta, kun kaikki on lad
 
     function animate(timeStamp){
     
+        //lasketaan delttatime. Käytetään hyväksi ruutupäivityksissä
         let deltatime = timeStamp - lastTime;
 
         if (timeStamp-lastTime>10) //framerate testit
         {   
-
             lastTime=timeStamp;
-            nelio1.update(deltatime, input);
+            nelio1.update(deltatime, input); 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
             nelio1.draw();
@@ -226,7 +282,7 @@ window.addEventListener('load', function(){ //jatketaan vasta, kun kaikki on lad
         if (!(nelio1.x > canvas.width))
         {
             console.log(!(nelio1.x > canvas.width));
-        requestAnimationFrame(animate);
+            requestAnimationFrame(animate);
         }
     }
     animate(0);
